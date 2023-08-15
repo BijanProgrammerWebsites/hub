@@ -1,0 +1,26 @@
+name: Deploy Qwik
+on:
+    workflow_call:
+        inputs:
+            process-name:
+                required: true
+                type: string
+
+jobs:
+    deploy-qwik:
+        runs-on: self-hosted
+
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Install Dependencies
+              run: npm i
+
+            - name: Build
+              run: npm run build
+
+            - name: Start Server
+              run: |
+                  pm2 stop ${{ process-name }} || true
+                  pm2 start server/entry.express.js --name ${{ process-name }}
+                  pm2 save
