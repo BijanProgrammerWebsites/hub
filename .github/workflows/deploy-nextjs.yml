@@ -1,0 +1,26 @@
+name: Deploy Next.js
+on:
+    workflow_call:
+        inputs:
+            process-name:
+                required: true
+                type: string
+
+jobs:
+    deploy-nextjs:
+        runs-on: self-hosted
+
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Install Dependencies
+              run: npm i
+
+            - name: Build
+              run: npm run build
+
+            - name: Start Server
+              run: |
+                  pm2 stop ${{ inputs.process-name }} || true
+                  pm2 start npm --name ${{ inputs.process-name }} -- start
+                  pm2 save
