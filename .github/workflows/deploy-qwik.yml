@@ -2,7 +2,7 @@ name: Deploy Qwik
 on:
     workflow_call:
         inputs:
-            pm2-process-name:
+            process-name:
                 required: true
                 type: string
 
@@ -21,6 +21,6 @@ jobs:
 
             - name: Start Server
               run: |
-                  pm2 stop ${{ pm2-process-name }} || true
-                  pm2 start server/entry.express.js --name ${{ pm2-process-name }}
+                  pm2 stop ${{ inputs.process-name }} || true
+                  pm2 start server/entry.express.js --name ${{ inputs.process-name }}
                   pm2 save
