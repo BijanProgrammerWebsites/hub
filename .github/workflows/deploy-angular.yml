@@ -13,8 +13,8 @@ on:
                 type: string
 
 jobs:
-    deploy:
-        name: Deploy
+    deploy-angular:
+        name: Deploy Angular
         runs-on: self-hosted
 
         steps:
