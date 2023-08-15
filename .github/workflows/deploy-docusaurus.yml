@@ -1,0 +1,29 @@
+name: Deploy Docusaurus
+on:
+    workflow_call:
+        inputs:
+            host:
+                required: true
+                type: string
+            base-href:
+                required: true
+                type: string
+
+jobs:
+    deploy-docusaurus:
+        runs-on: self-hosted
+
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Install Dependencies
+              run: npm i
+
+            - name: Build
+              run: npm run build
+
+            - name: Move Built Files to Corresponding Folder
+              run: |
+                  rm -rf /var/www/${{ inputs.host }}/html${{ inputs.base-href }}
+                  mkdir -p /var/www/${{ inputs.host }}/html${{ inputs.base-href }}
+                  mv build/* /var/www/${{ inputs.host }}/html${{ inputs.base-href }}
