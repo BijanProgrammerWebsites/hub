@@ -19,8 +19,12 @@ jobs:
             - name: Build
               run: npm run build
 
-            - name: Start Server
-              run: |
-                  pm2 stop ${{ inputs.process-name }} || true
-                  pm2 start server/entry.express.js --name ${{ inputs.process-name }}
-                  pm2 save
+            - name: Delete Previous Process Silently
+              continue-on-error: true
+              run: pm2 delete "${{ inputs.process-name }}"
+
+            - name: Start a New Process
+              run: pm2 start server/entry.express.js --name ${{ inputs.process-name }}
+
+            - name: Save Current Process List
+              run: pm2 save
