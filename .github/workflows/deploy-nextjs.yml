@@ -13,18 +13,32 @@ jobs:
         steps:
             - uses: actions/checkout@v3
 
-            - name: Install Dependencies
-              run: npm i
+            - name: Get Current Working Directory
+              run: pwd
 
-            - name: Build
-              run: npm run build
+            - name: Get Current User
+              run: whoami
 
-            - name: Delete Previous Process Silently
-              continue-on-error: true
-              run: pm2 delete "${{ inputs.process-name }}"
+            - name: Get pm2 Location
+              run: which pm2
 
-            - name: Start a New Process
-              run: pm2 start npm --name "${{ inputs.process-name }}" -- start
+            - name: Get pm2 Status
+              run: pm2 status
 
-            - name: Save Current Process List
-              run: pm2 save
+            - name: Get Running Processes
+              run: pm2 list
+#            - name: Install Dependencies
+#              run: npm i
+#
+#            - name: Build
+#              run: npm run build
+#
+#            - name: Delete Previous Process Silently
+#              continue-on-error: true
+#              run: pm2 delete "${{ inputs.process-name }}"
+#
+#            - name: Start a New Process
+#              run: pm2 start npm --name "${{ inputs.process-name }}" -- start
+#
+#            - name: Save Current Process List
+#              run: pm2 save
