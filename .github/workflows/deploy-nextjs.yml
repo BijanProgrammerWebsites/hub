@@ -20,7 +20,8 @@ jobs:
               run: npm run build
 
             - name: Delete Previous Process Silently
-              run: pm2 delete "${{ inputs.process-name }}" --silent
+              continue-on-error: true
+              run: pm2 delete "${{ inputs.process-name }}"
 
             - name: Start a New Process
               run: pm2 start npm --name "${{ inputs.process-name }}" -- start
