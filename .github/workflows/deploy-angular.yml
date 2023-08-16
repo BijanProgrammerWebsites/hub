@@ -25,8 +25,11 @@ jobs:
             - name: Build
               run: npm run build -- --base-href=${{ inputs.base-href }}
 
-            - name: Move Built Files to Corresponding Folder
-              run: |
-                  rm -rf /var/www/${{ inputs.host }}/html${{ inputs.base-href }}
-                  mkdir -p /var/www/${{ inputs.host }}/html${{ inputs.base-href }}
-                  mv dist/${{ inputs.project-name }}/* /var/www/${{ inputs.host }}/html${{ inputs.base-href }}
+            - name: Remove Previous Deploy Folder
+              run: rm -rf /var/www/${{ inputs.host }}/html${{ inputs.base-href }}
+
+            - name: Create Deploy Folder
+              run: mkdir -p /var/www/${{ inputs.host }}/html${{ inputs.base-href }}
+
+            - name: Move Built Files to Deploy Folder
+              run: mv dist/${{ inputs.project-name }}/* /var/www/${{ inputs.host }}/html${{ inputs.base-href }}
