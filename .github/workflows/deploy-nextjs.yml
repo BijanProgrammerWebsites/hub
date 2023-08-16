@@ -19,8 +19,11 @@ jobs:
             - name: Build
               run: npm run build
 
-            - name: Start Server
-              run: |
-                  pm2 stop ${{ inputs.process-name }} || true
-                  pm2 start npm --name ${{ inputs.process-name }} -- start
-                  pm2 save
+            - name: Delete Previous Process Silently
+              run: pm2 delete "${{ inputs.process-name }}" --silent
+
+            - name: Start a New Process
+              run: pm2 start npm --name "${{ inputs.process-name }}" -- start
+
+            - name: Save Current Process List
+              run: pm2 save
