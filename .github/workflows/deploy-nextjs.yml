@@ -13,6 +13,10 @@ jobs:
         steps:
             - uses: actions/checkout@v3
 
+            - name: Delete Previous Process Silently
+              continue-on-error: true
+              run: pm2 delete "${{ inputs.process-name }}"
+
             - name: Fill Out The .env File
               run: echo "${{ secrets.ENV_FILE }}" > .env
 
@@ -24,10 +28,6 @@ jobs:
 
             - name: Build
               run: npm run build
-
-            - name: Delete Previous Process Silently
-              continue-on-error: true
-              run: pm2 delete "${{ inputs.process-name }}"
 
             - name: Start a New Process
               run: pm2 start npm --name "${{ inputs.process-name }}" -- start
