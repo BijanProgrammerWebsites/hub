@@ -1,31 +1,31 @@
 name: Deploy Prisma
 on:
-    workflow_call:
-        inputs:
-            process-name:
-                required: true
-                type: string
+  workflow_call:
+    inputs:
+      process-name:
+        required: true
+        type: string
 
 jobs:
-    deploy-prisma:
-        runs-on: self-hosted
+  deploy-prisma:
+    runs-on: self-hosted
 
-        steps:
-            - uses: actions/checkout@v4.2.1
+    steps:
+      - uses: actions/checkout@v4.2.1
 
-            - name: Stop Process Silently
-              continue-on-error: true
-              run: pm2 stop "${{ inputs.process-name }}"
+      - name: Stop Process Silently
+        continue-on-error: true
+        run: pm2 stop "${{ inputs.process-name }}"
 
-            - name: Fill Out The .env File
-              run: echo "${{ secrets.ENV_FILE }}" > .env
+      - name: Fill Out The .env File
+        run: echo "${{ secrets.ENV_FILE }}" > .env
 
-            - name: Install Dependencies
-              run: npm i
+      - name: Install Dependencies
+        run: npm i
 
-            - name: Run Migrations
-              run: npx prisma migrate deploy
+      - name: Run Migrations
+        run: npx prisma migrate deploy
 
-            - name: Start Process Silently
-              continue-on-error: true
-              run: pm2 start "${{ inputs.process-name }}"
+      - name: Start Process Silently
+        continue-on-error: true
+        run: pm2 start "${{ inputs.process-name }}"

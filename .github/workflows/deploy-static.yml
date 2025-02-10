@@ -1,32 +1,32 @@
 name: Deploy Static
 on:
-    workflow_call:
-        inputs:
-            host:
-                required: true
-                type: string
-            base-href:
-                required: true
-                type: string
+  workflow_call:
+    inputs:
+      host:
+        required: true
+        type: string
+      base-href:
+        required: true
+        type: string
 
 jobs:
-    deploy-static:
-        runs-on: self-hosted
+  deploy-static:
+    runs-on: self-hosted
 
-        steps:
-            - uses: actions/checkout@v4.2.1
+    steps:
+      - uses: actions/checkout@v4.2.1
 
-            - name: Install Dependencies
-              run: npm i
+      - name: Install Dependencies
+        run: npm i
 
-            - name: Build
-              run: npm run build
+      - name: Build
+        run: npm run build
 
-            - name: Remove Previous Deploy Folder
-              run: rm -rf /var/www/${{ inputs.host }}/html${{ inputs.base-href }}
+      - name: Remove Previous Deploy Folder
+        run: rm -rf /var/www/${{ inputs.host }}/html${{ inputs.base-href }}
 
-            - name: Create Deploy Folder
-              run: mkdir -p /var/www/${{ inputs.host }}/html${{ inputs.base-href }}
+      - name: Create Deploy Folder
+        run: mkdir -p /var/www/${{ inputs.host }}/html${{ inputs.base-href }}
 
-            - name: Move Built Files to Deploy Folder
-              run: mv dist/* /var/www/${{ inputs.host }}/html${{ inputs.base-href }}
+      - name: Move Built Files to Deploy Folder
+        run: mv dist/* /var/www/${{ inputs.host }}/html${{ inputs.base-href }}

@@ -1,36 +1,36 @@
 name: Deploy Next.js
 on:
-    workflow_call:
-        inputs:
-            process-name:
-                required: true
-                type: string
+  workflow_call:
+    inputs:
+      process-name:
+        required: true
+        type: string
 
 jobs:
-    deploy-nextjs:
-        runs-on: self-hosted
+  deploy-nextjs:
+    runs-on: self-hosted
 
-        steps:
-            - uses: actions/checkout@v4.2.1
+    steps:
+      - uses: actions/checkout@v4.2.1
 
-            - name: Delete Previous Process Silently
-              continue-on-error: true
-              run: pm2 delete "${{ inputs.process-name }}"
+      - name: Delete Previous Process Silently
+        continue-on-error: true
+        run: pm2 delete "${{ inputs.process-name }}"
 
-            - name: Fill Out The .env File
-              run: echo "${{ secrets.ENV_FILE }}" > .env
+      - name: Fill Out The .env File
+        run: echo "${{ secrets.ENV_FILE }}" > .env
 
-            - name: Fill Out The .env.local File
-              run: echo "${{ secrets.ENV_LOCAL_FILE }}" > .env.local
+      - name: Fill Out The .env.local File
+        run: echo "${{ secrets.ENV_LOCAL_FILE }}" > .env.local
 
-            - name: Install Dependencies
-              run: npm i
+      - name: Install Dependencies
+        run: npm i
 
-            - name: Build
-              run: npm run build
+      - name: Build
+        run: npm run build
 
-            - name: Start a New Process
-              run: pm2 start npm --name "${{ inputs.process-name }}" -- start
+      - name: Start a New Process
+        run: pm2 start npm --name "${{ inputs.process-name }}" -- start
 
-            - name: Save Current Process List
-              run: pm2 save
+      - name: Save Current Process List
+        run: pm2 save
