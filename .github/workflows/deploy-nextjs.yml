@@ -26,10 +26,10 @@ jobs:
       - name: Prepare Artifact
         run: |
           mkdir artifact
-          cp -r .next/standalone artifact/
-          cp -r .next/static artifact/.next/
+          cp -r .next/standalone/* artifact/
+          mkdir -p artifact/.next
+          cp -r .next/static artifact/.next/static
           [ -d public ] && cp -r public artifact/
-          cp package.json artifact/
 
       - name: Compress Artifact
         run: tar -czf artifact.tar.gz -C artifact .
@@ -68,7 +68,7 @@ jobs:
         run: pm2 delete "${{ inputs.process-name }}"
 
       - name: Start a New Process
-        run: cd app && pm2 start npm --name "${{ inputs.process-name }}" -- start
+        run: cd app && pm2 start server.js --name "${{ inputs.process-name }}"
 
       - name: Save Current Process List
         run: pm2 save
