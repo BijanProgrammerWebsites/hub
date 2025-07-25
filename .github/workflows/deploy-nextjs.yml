@@ -5,6 +5,9 @@ on:
       process-name:
         required: true
         type: string
+      port:
+        required: true
+        type: string
 
 jobs:
   build:
@@ -62,7 +65,7 @@ jobs:
         run: pm2 delete "${{ inputs.process-name }}"
 
       - name: Start a New Process
-        run: cd app && pm2 start server.js --name "${{ inputs.process-name }}"
+        run: cd app && PORT=${{ inputs.port }} pm2 start server.js --name "${{ inputs.process-name }}"
 
       - name: Save Current Process List
         run: pm2 save
