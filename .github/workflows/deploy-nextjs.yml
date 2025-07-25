@@ -28,10 +28,11 @@ jobs:
           mkdir artifact
           cp -r .next/standalone artifact/
           cp -r .next/static artifact/.next/
-          cp -r public artifact/
+          [ -d public ] && cp -r public artifact/
           cp package.json artifact/
 
-      - run: tar -czf artifact.tar.gz -C artifact .
+      - name: Compress Artifact
+        run: tar -czf artifact.tar.gz -C artifact .
 
       - uses: actions/upload-artifact@v4
         with:
@@ -47,14 +48,16 @@ jobs:
         with:
           name: artifact
 
-      - run: |
-          rm -rf app && mkdir app
-          tar -xzf artifact.tar.gz -C app
+      - name: Recreate app Directory
+        run: rm -rf app && mkdir app
 
-      - name: Fill Out The .env File
+      - name: Decompress Artifact
+        run: tar -xzf artifact.tar.gz -C app
+
+      - name: Fill Out the .env File
         run: echo "${{ secrets.ENV_FILE }}" > app/.env
 
-      - name: Fill Out The .env.local File
+      - name: Fill Out the .env.local File
         run: echo "${{ secrets.ENV_LOCAL_FILE }}" > app/.env.local
 
       - name: Install Dependencies
