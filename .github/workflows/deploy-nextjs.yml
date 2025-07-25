@@ -25,14 +25,11 @@ jobs:
 
       - name: Prepare Artifact
         run: |
-          mkdir artifact
-          cp -r .next/standalone/* artifact/
-          mkdir -p artifact/.next
-          cp -r .next/static artifact/.next/static
-          [ -d public ] && cp -r public artifact/
+          [ -d public ] && cp -r public .next/standalone/
+          [ -d .next/static ] && cp -r .next/static .next/standalone/.next/
 
       - name: Compress Artifact
-        run: tar -czf artifact.tar.gz -C artifact .
+        run: tar -czf artifact.tar.gz -C .next/standalone .
 
       - uses: actions/upload-artifact@v4
         with:
@@ -59,9 +56,6 @@ jobs:
 
       - name: Fill Out the .env.local File
         run: echo "${{ secrets.ENV_LOCAL_FILE }}" > app/.env.local
-
-      - name: Install Dependencies
-        run: cd app && npm install --omit=dev
 
       - name: Delete Previous Process Silently
         continue-on-error: true
