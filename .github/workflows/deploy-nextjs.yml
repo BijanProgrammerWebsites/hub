@@ -69,3 +69,6 @@ jobs:
 
       - name: Save Current Process List
         run: pm2 save
+
+      - name: Cleanup
+        run: rm -f artifact.tar.gz
