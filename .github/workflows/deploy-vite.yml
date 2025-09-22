@@ -16,6 +16,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4.2.1
 
+      - name: Fill Out the .env File
+        run: echo "${{ secrets.ENV_FILE }}" > .env
+
       - name: Install Dependencies
         run: npm i
 
