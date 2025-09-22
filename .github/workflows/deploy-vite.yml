@@ -8,6 +8,7 @@ on:
       base-href:
         required: true
         type: string
+    secrets: inherit
 
 jobs:
   deploy-vite:
