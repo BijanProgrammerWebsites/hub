@@ -1,0 +1,33 @@
+name: Deploy Node.js
+on:
+  workflow_call:
+    inputs:
+      process-name:
+        required: true
+        type: string
+
+jobs:
+  deploy-nodejs:
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v4.2.1
+
+      - name: Delete Previous Process Silently
+        continue-on-error: true
+        run: pm2 delete "${{ inputs.process-name }}"
+
+      - name: Fill Out the .env File
+        run: echo "${{ secrets.ENV_FILE }}" > .env
+
+      - name: Install Dependencies
+        run: npm i
+
+      - name: Build
+        run: npm run build
+
+      - name: Start a New Process
+        run: pm2 start dist/main.js --name "${{ inputs.process-name }}"
+
+      - name: Save Current Process List
+        run: pm2 save
