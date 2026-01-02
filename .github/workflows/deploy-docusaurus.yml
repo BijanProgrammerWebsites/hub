@@ -10,17 +10,44 @@ on:
         type: string
 
 jobs:
-  deploy-docusaurus:
-    runs-on: self-hosted
+  build:
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4.2.1
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
 
       - name: Install Dependencies
-        run: npm i
+        run: npm ci
 
       - name: Build
         run: npm run build
+
+      - name: Compress Artifact
+        run: tar -czf artifact.tar.gz -C build .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: artifact
+          path: artifact.tar.gz
+
+  deploy:
+    runs-on: self-hosted
+    needs: build
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: artifact
+
+      - name: Recreate build Directory
+        run: rm -rf build && mkdir build
+
+      - name: Decompress Artifact
+        run: tar -xzf artifact.tar.gz -C build
 
       - name: Remove Previous Deploy Folder
         run: rm -rf /var/www/${{ inputs.host }}/html${{ inputs.base-href }}
