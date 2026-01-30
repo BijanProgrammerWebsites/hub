@@ -1,0 +1,66 @@
+name: Deploy Express
+on:
+  workflow_call:
+    inputs:
+      process-name:
+        required: true
+        type: string
+      port:
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Compress Artifact
+        run: tar -czf artifact.tar.gz -C dist .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: artifact
+          path: artifact.tar.gz
+
+  deploy:
+    runs-on: self-hosted
+    needs: build
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: artifact
+
+      - name: Recreate dist Directory
+        run: rm -rf dist && mkdir dist
+
+      - name: Decompress Artifact
+        run: tar -xzf artifact.tar.gz -C dist
+
+      - name: Fill Out the .env File
+        run: echo "${{ secrets.ENV_FILE }}" > dist/.env
+
+      - name: Delete Previous Process Silently
+        continue-on-error: true
+        run: pm2 delete "${{ inputs.process-name }}"
+
+      - name: Start a New Process
+        run: cd dist && PORT=${{ inputs.port }} pm2 start server.js --name "${{ inputs.process-name }}"
+
+      - name: Save Current Process List
+        run: pm2 save
+
+      - name: Cleanup
+        run: rm -f artifact.tar.gz
