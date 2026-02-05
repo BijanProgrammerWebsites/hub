@@ -21,10 +21,10 @@ jobs:
         run: pm2 delete "${{ inputs.process-name }}"
 
       - name: Fill Out The .env File
-        run: echo "${{ secrets.ENV_FILE }}" > .env
+        run: printf '%s' "${{ secrets.ENV_FILE }}" > .env
 
       - name: Fill Out The .env.local File
-        run: echo "${{ secrets.ENV_LOCAL_FILE }}" > .env.local
+        run: printf '%s' "${{ secrets.ENV_LOCAL_FILE }}" > .env.local
 
       - name: Install Dependencies
         run: npm i

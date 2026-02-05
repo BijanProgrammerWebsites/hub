@@ -24,7 +24,7 @@ jobs:
           node-version: "22"
 
       - name: Fill Out the .env File
-        run: echo "${{ secrets.ENV_FILE }}" > .env
+        run: printf '%s' "${{ secrets.ENV_FILE }}" > .env
 
       - name: Install Dependencies
         run: npm ci

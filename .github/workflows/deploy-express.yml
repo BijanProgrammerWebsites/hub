@@ -50,7 +50,7 @@ jobs:
         run: tar -xzf artifact.tar.gz -C dist
 
       - name: Fill Out the .env File
-        run: echo "${{ secrets.ENV_FILE }}" > dist/.env
+        run: printf '%s' "${{ secrets.ENV_FILE }}" > dist/.env
 
       - name: Delete Previous Process Silently
         continue-on-error: true

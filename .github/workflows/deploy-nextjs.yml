@@ -55,10 +55,10 @@ jobs:
         run: tar -xzf artifact.tar.gz -C app
 
       - name: Fill Out the .env File
-        run: echo "${{ secrets.ENV_FILE }}" > app/.env
+        run: printf '%s' "${{ secrets.ENV_FILE }}" > app/.env
 
       - name: Fill Out the .env.local File
-        run: echo "${{ secrets.ENV_LOCAL_FILE }}" > app/.env.local
+        run: printf '%s' "${{ secrets.ENV_LOCAL_FILE }}" > app/.env.local
 
       - name: Delete Previous Process Silently
         continue-on-error: true
