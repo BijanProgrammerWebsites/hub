@@ -8,6 +8,15 @@ on:
       port:
         required: true
         type: string
+    secrets:
+      SERVER_HOST:
+        required: true
+      SERVER_USERNAME:
+        required: true
+      SERVER_PORT:
+        required: true
+      SERVER_SSH_KEY:
+        required: true
 
 jobs:
   build:
