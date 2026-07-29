@@ -17,12 +17,12 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Compress Artifact
-        run: tar -czf artifact.tar.gz -C . .
+        run: tar -czf ../artifact.tar.gz -C . .
 
       - uses: actions/upload-artifact@v4
         with:
           name: artifact
-          path: artifact.tar.gz
+          path: ../artifact.tar.gz
 
   deploy:
     runs-on: ubuntu-latest
