@@ -36,7 +36,7 @@ jobs:
           path: artifact.tar.gz
 
   deploy:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     needs: build
 
     steps:
@@ -44,17 +44,36 @@ jobs:
         with:
           name: artifact
 
-      - name: Recreate build Directory
-        run: rm -rf build && mkdir build
+      - name: Move Artifact to Server
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          port: ${{ secrets.SERVER_PORT }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          source: artifact.tar.gz
+          target: ~/websites/.temp/${{ inputs.process-name }}
 
-      - name: Decompress Artifact
-        run: tar -xzf artifact.tar.gz -C build
+      - name: SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          port: ${{ secrets.SERVER_PORT }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            APP_DIR="$HOME/websites/${{ inputs.process-name }}"
+            ARTIFACT="$HOME/websites/.temp/${{ inputs.process-name }}/artifact.tar.gz"
 
-      - name: Remove Previous Deploy Folder
-        run: rm -rf /var/www/${{ inputs.host }}/html${{ inputs.base-href }}
+            mkdir -p "$APP_DIR"
+            rm -rf "$APP_DIR"/*
 
-      - name: Create Deploy Folder
-        run: mkdir -p /var/www/${{ inputs.host }}/html${{ inputs.base-href }}
+            tar -xzf "$ARTIFACT" -C "$APP_DIR"
 
-      - name: Move Built Files to Deploy Folder
-        run: mv build/* /var/www/${{ inputs.host }}/html${{ inputs.base-href }}
+            cd "$APP_DIR"
+
+            rm -rf /var/www/${{ inputs.host }}/html${{ inputs.base-href }}
+            mkdir -p /var/www/${{ inputs.host }}/html${{ inputs.base-href }}
+            mv ./* /var/www/${{ inputs.host }}/html${{ inputs.base-href }}
+
+            rm -f "$ARTIFACT"
