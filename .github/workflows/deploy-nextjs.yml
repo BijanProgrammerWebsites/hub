@@ -51,7 +51,7 @@ jobs:
         with:
           name: artifact
 
-      - name: Upload Artifact
+      - name: Move Artifact to Server
         uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -61,7 +61,7 @@ jobs:
           source: artifact.tar.gz
           target: ~/websites/.temp/${{ inputs.process-name }}
 
-      - name: Deploy
+      - name: SSH
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -70,12 +70,9 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             APP_DIR="$HOME/websites/${{ inputs.process-name }}"
-            TEMP_DIR="$HOME/websites/.temp/${{ inputs.process-name }}"
-            ARTIFACT="$TEMP_DIR/artifact.tar.gz"
+            ARTIFACT="$HOME/websites/.temp/${{ inputs.process-name }}/artifact.tar.gz"
 
             mkdir -p "$APP_DIR"
-            mkdir -p "$TEMP_DIR"
-
             rm -rf "$APP_DIR"/*
 
             tar -xzf "$ARTIFACT" -C "$APP_DIR"
