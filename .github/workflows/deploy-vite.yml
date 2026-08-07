@@ -66,7 +66,7 @@ jobs:
           port: ${{ secrets.SERVER_PORT }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           source: artifact.tar.gz
-          target: ~/websites/.temp/${{ inputs.process-name }}
+          target: ~/websites/.temp/${{ inputs.host }}
 
       - name: SSH
         uses: appleboy/ssh-action@v1
@@ -76,8 +76,8 @@ jobs:
           port: ${{ secrets.SERVER_PORT }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            APP_DIR="$HOME/websites/${{ inputs.process-name }}"
-            ARTIFACT="$HOME/websites/.temp/${{ inputs.process-name }}/artifact.tar.gz"
+            APP_DIR="$HOME/websites/${{ inputs.host }}"
+            ARTIFACT="$HOME/websites/.temp/${{ inputs.host }}/artifact.tar.gz"
 
             mkdir -p "$APP_DIR"
             rm -rf "$APP_DIR"/*
