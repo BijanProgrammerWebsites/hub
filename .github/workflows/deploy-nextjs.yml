@@ -83,7 +83,7 @@ jobs:
             cd "$APP_DIR"
 
             if pm2 describe "${{ inputs.process-name }}" >/dev/null 2>&1; then
-              pm2 restart "${{ inputs.process-name }}"
+              PORT=${{ inputs.port }} pm2 restart "${{ inputs.process-name }}" --update-env
             else
               PORT=${{ inputs.port }} pm2 start server.js --name "${{ inputs.process-name }}"
             fi
