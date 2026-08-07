@@ -67,4 +67,4 @@ jobs:
             mkdir -p /var/www/${{ inputs.host }}/html${{ inputs.base-href }}
             mv ./* /var/www/${{ inputs.host }}/html${{ inputs.base-href }}
 
-            rm -f "TEMP_DIR"
+            rm -rf "TEMP_DIR"
