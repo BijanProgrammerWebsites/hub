@@ -27,6 +27,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Fill Out the .env File
+        run: printf '%s' "${{ secrets.ENV_FILE }}" > ".env"
+
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
@@ -80,8 +83,6 @@ jobs:
             rm -rf "$APP_DIR"/*
 
             tar -xzf "$ARTIFACT" -C "$APP_DIR"
-
-            printf '%s' "${{ secrets.ENV_FILE }}" > "$APP_DIR/.env"
 
             cd "$APP_DIR"
 
