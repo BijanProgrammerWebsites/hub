@@ -57,7 +57,7 @@ jobs:
             mkdir -p "$APP_DIR"
             rm -rf "$APP_DIR"/*
 
-            gh run download ${{ github.run_id }} -n artifact -D "$TEMP_DIR"
+            gh run download ${{ github.run_id }} -R ${{ github.repository }} -n artifact -D "$TEMP_DIR"
 
             tar -xzf "$TEMP_DIR/artifact.tar.gz" -C "$APP_DIR"
 
