@@ -51,23 +51,15 @@ jobs:
         with:
           name: artifact
 
-      - name: Configure SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_server
-          chmod 600 ~/.ssh/id_server
-
       - name: Move Artifact to Server
-        run: |
-          rsync -v \
-            -e "ssh \
-              -i ~/.ssh/id_server \
-              -o StrictHostKeyChecking=no \
-              -o Compression=no \
-              -o PreferredAuthentications=publickey \
-              -p ${{ secrets.SERVER_PORT }}" \
-            artifact.tar.gz \
-            ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }}:~/websites/.temp/${{ inputs.host }}
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          port: ${{ secrets.SERVER_PORT }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          source: artifact.tar.gz
+          target: ~/websites/.temp/${{ inputs.process-name }}
 
       - name: SSH
         uses: appleboy/ssh-action@v1
