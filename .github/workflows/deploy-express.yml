@@ -17,6 +17,8 @@ on:
         required: true
       SERVER_SSH_KEY:
         required: true
+      ENV_FILE:
+        required: false
 
 jobs:
   build:
@@ -80,7 +82,6 @@ jobs:
             tar -xzf "$ARTIFACT" -C "$APP_DIR"
 
             printf '%s' "${{ secrets.ENV_FILE }}" > "$APP_DIR/.env"
-            printf '%s' "${{ secrets.ENV_LOCAL_FILE }}" > "$APP_DIR/.env.local"
 
             cd "$APP_DIR"
 
