@@ -29,6 +29,10 @@ on:
       ENV_LOCAL_FILE:
         required: false
 
+env:
+  ARTIFACT: artifact-${{ github.repository_id }}.tar.gz
+  WWW: /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -54,12 +58,12 @@ jobs:
           [ -d .next/static ] && cp -r .next/static .next/standalone/.next/
 
       - name: Compress Artifact
-        run: tar -czf artifact.tar.gz -C .next/standalone .
+        run: tar -czf $ARTIFACT -C .next/standalone .
 
       - uses: actions/upload-artifact@v7
         with:
           name: artifact
-          path: artifact.tar.gz
+          path: $ARTIFACT
 
   deploy:
     runs-on: ubuntu-latest
@@ -85,7 +89,7 @@ jobs:
 
             gh run download ${{ github.run_id }} -R ${{ github.repository }} -n artifact -D "$TEMP_DIR"
 
-            tar -xzf "$TEMP_DIR/artifact.tar.gz" -C "$APP_DIR"
+            tar -xzf "$TEMP_DIR/$ARTIFACT" -C "$APP_DIR"
             rm -rf "TEMP_DIR"
 
             cd "$APP_DIR"
@@ -93,11 +97,11 @@ jobs:
             printf '%s' "${{ secrets.ENV_FILE }}" > ".env"
             printf '%s' "${{ secrets.ENV_LOCAL_FILE }}" > ".env"
 
-            rm -rf /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}
-            mkdir -p /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}
-            mv ./* /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}
+            rm -rf $WWW
+            mkdir -p $WWW
+            mv ./* $WWW
 
-            cd /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}
+            cd $WWW
 
             if pm2 describe "${{ inputs.process-name }}" >/dev/null 2>&1; then
               PORT=${{ inputs.port }} pm2 restart "${{ inputs.process-name }}" --update-env
