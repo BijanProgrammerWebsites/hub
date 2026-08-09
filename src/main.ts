@@ -1,5 +1,15 @@
+import fs from "node:fs/promises";
+
+import { workflows } from "./data/workflows";
+import { generate } from "./utils/generate";
+
 async function main(): Promise<void> {
-  console.log("Hello, friend!");
+  for (const workflow of workflows) {
+    await fs.writeFile(
+      `.github/workflows/${workflow.filename}`,
+      generate(workflow),
+    );
+  }
 }
 
 main().then();
