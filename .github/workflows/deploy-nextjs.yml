@@ -3,21 +3,40 @@ name: Deploy Next.js
 on:
   workflow_call:
     inputs:
+      domain:
+        type: string
+        required: true
+      base-href:
+        type: string
+        required: true
       process-name:
-        required: true
         type: string
+        required: true
       port:
-        required: true
         type: string
+        required: true
+    secrets:
+      SERVER_HOST:
+        required: true
+      SERVER_USERNAME:
+        required: true
+      SERVER_PORT:
+        required: true
+      SERVER_SSH_KEY:
+        required: true
+      ENV_FILE:
+        required: false
+      ENV_LOCAL_FILE:
+        required: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: "24"
           cache: "npm"
@@ -37,7 +56,7 @@ jobs:
       - name: Compress Artifact
         run: tar -czf artifact.tar.gz -C .next/standalone .
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: artifact
           path: artifact.tar.gz
@@ -55,30 +74,34 @@ jobs:
           port: ${{ secrets.SERVER_PORT }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            APP_DIR="$HOME/websites/${{ inputs.process-name }}"
-            TEMP_DIR="$HOME/websites/.temp/${{ inputs.process-name }}"
+            APP_DIR="$HOME/websites/${{ inputs.domain }}"
+            TEMP_DIR="$HOME/websites/.temp/${{ inputs.domain }}"
 
             mkdir -p "$TEMP_DIR"
-            rm -rf "$TEMP_DIR"/*
+            rm -rf "$TEMP_DIR/*"
 
             mkdir -p "$APP_DIR"
-            rm -rf "$APP_DIR"/*
+            rm -rf "$APP_DIR/*"
 
             gh run download ${{ github.run_id }} -R ${{ github.repository }} -n artifact -D "$TEMP_DIR"
 
             tar -xzf "$TEMP_DIR/artifact.tar.gz" -C "$APP_DIR"
-
-            printf '%s' "${{ secrets.ENV_FILE }}" > "$APP_DIR/.env"
-            printf '%s' "${{ secrets.ENV_LOCAL_FILE }}" > "$APP_DIR/.env.local"
+            rm -rf "TEMP_DIR"
 
             cd "$APP_DIR"
+
+            printf '%s' "${{ secrets.ENV_FILE }}" > ".env"
+            printf '%s' "${{ secrets.ENV_LOCAL_FILE }}" > ".env"
+
+            rm -rf /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}
+            mkdir -p /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}
+            mv ./* /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}
+
+            cd /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}
 
             if pm2 describe "${{ inputs.process-name }}" >/dev/null 2>&1; then
               PORT=${{ inputs.port }} pm2 restart "${{ inputs.process-name }}" --update-env
             else
               PORT=${{ inputs.port }} pm2 start server.js --name "${{ inputs.process-name }}"
             fi
-
             pm2 save
-
-            rm -rf "TEMP_DIR"

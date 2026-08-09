@@ -7,7 +7,7 @@ async function main(): Promise<void> {
   for (const workflow of workflows) {
     await fs.writeFile(
       `.github/workflows/${workflow.filename}`,
-      generate(workflow),
+      generate(workflow) + "\n",
     );
   }
 }

@@ -1,22 +1,32 @@
 name: Deploy Docusaurus
+
 on:
   workflow_call:
     inputs:
-      host:
-        required: true
+      domain:
         type: string
+        required: true
       base-href:
-        required: true
         type: string
+        required: true
+    secrets:
+      SERVER_HOST:
+        required: true
+      SERVER_USERNAME:
+        required: true
+      SERVER_PORT:
+        required: true
+      SERVER_SSH_KEY:
+        required: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: "24"
           cache: "npm"
@@ -30,7 +40,7 @@ jobs:
       - name: Compress Artifact
         run: tar -czf artifact.tar.gz -C build .
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: artifact
           path: artifact.tar.gz
@@ -40,21 +50,7 @@ jobs:
     needs: build
 
     steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: artifact
-
-      - name: Move Artifact to Server
-        uses: appleboy/scp-action@v1
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USERNAME }}
-          port: ${{ secrets.SERVER_PORT }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          source: artifact.tar.gz
-          target: ~/websites/.temp/${{ inputs.host }}
-
-      - name: SSH
+      - name: Run Commands on Server Using SSH
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -62,18 +58,22 @@ jobs:
           port: ${{ secrets.SERVER_PORT }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            APP_DIR="$HOME/websites/${{ inputs.host }}"
-            ARTIFACT="$HOME/websites/.temp/${{ inputs.host }}/artifact.tar.gz"
+            APP_DIR="$HOME/websites/${{ inputs.domain }}"
+            TEMP_DIR="$HOME/websites/.temp/${{ inputs.domain }}"
+
+            mkdir -p "$TEMP_DIR"
+            rm -rf "$TEMP_DIR/*"
 
             mkdir -p "$APP_DIR"
-            rm -rf "$APP_DIR"/*
+            rm -rf "$APP_DIR/*"
 
-            tar -xzf "$ARTIFACT" -C "$APP_DIR"
+            gh run download ${{ github.run_id }} -R ${{ github.repository }} -n artifact -D "$TEMP_DIR"
+
+            tar -xzf "$TEMP_DIR/artifact.tar.gz" -C "$APP_DIR"
+            rm -rf "TEMP_DIR"
 
             cd "$APP_DIR"
 
-            rm -rf /var/www/${{ inputs.host }}/html${{ inputs.base-href }}
-            mkdir -p /var/www/${{ inputs.host }}/html${{ inputs.base-href }}
-            mv ./* /var/www/${{ inputs.host }}/html${{ inputs.base-href }}
-
-            rm -f "$ARTIFACT"
+            rm -rf /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}
+            mkdir -p /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}
+            mv ./* /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}

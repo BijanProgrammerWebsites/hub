@@ -1,33 +1,98 @@
 name: Deploy NestJS
+
 on:
   workflow_call:
     inputs:
-      process-name:
-        required: true
+      domain:
         type: string
+        required: true
+      base-href:
+        type: string
+        required: true
+      process-name:
+        type: string
+        required: true
+      port:
+        type: string
+        required: true
+    secrets:
+      SERVER_HOST:
+        required: true
+      SERVER_USERNAME:
+        required: true
+      SERVER_PORT:
+        required: true
+      SERVER_SSH_KEY:
+        required: true
+      ENV_FILE:
+        required: false
 
 jobs:
-  deploy-nestjs:
-    runs-on: self-hosted
+  build:
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4.2.1
+      - uses: actions/checkout@v7
 
-      - name: Delete Previous Process Silently
-        continue-on-error: true
-        run: pm2 delete "${{ inputs.process-name }}"
-
-      - name: Fill Out the .env File
-        run: printf '%s' "${{ secrets.ENV_FILE }}" > .env
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: "npm"
 
       - name: Install Dependencies
-        run: npm i
+        run: npm ci
 
       - name: Build
         run: npm run build
 
-      - name: Start a New Process
-        run: pm2 start dist/main.js --name "${{ inputs.process-name }}"
+      - name: Compress Artifact
+        run: tar -czf artifact.tar.gz -C dist .
 
-      - name: Save Current Process List
-        run: pm2 save
+      - uses: actions/upload-artifact@v7
+        with:
+          name: artifact
+          path: artifact.tar.gz
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Run Commands on Server Using SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          port: ${{ secrets.SERVER_PORT }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            APP_DIR="$HOME/websites/${{ inputs.domain }}"
+            TEMP_DIR="$HOME/websites/.temp/${{ inputs.domain }}"
+
+            mkdir -p "$TEMP_DIR"
+            rm -rf "$TEMP_DIR/*"
+
+            mkdir -p "$APP_DIR"
+            rm -rf "$APP_DIR/*"
+
+            gh run download ${{ github.run_id }} -R ${{ github.repository }} -n artifact -D "$TEMP_DIR"
+
+            tar -xzf "$TEMP_DIR/artifact.tar.gz" -C "$APP_DIR"
+            rm -rf "TEMP_DIR"
+
+            cd "$APP_DIR"
+
+            printf '%s' "${{ secrets.ENV_FILE }}" > ".env"
+
+            rm -rf /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}
+            mkdir -p /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}
+            mv ./* /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}
+
+            cd /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}
+
+            if pm2 describe "${{ inputs.process-name }}" >/dev/null 2>&1; then
+              PORT=${{ inputs.port }} pm2 restart "${{ inputs.process-name }}" --update-env
+            else
+              PORT=${{ inputs.port }} pm2 start server.js --name "${{ inputs.process-name }}"
+            fi
+            pm2 save
