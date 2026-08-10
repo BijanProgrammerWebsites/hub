@@ -202,7 +202,7 @@ function generateDeployJobSshScript(workflow: Workflow): string {
   return join([
     generateDeployJobBaseHrefNormalizer(workflow),
     "",
-    'APP_DIR="$HOME/websites/${{ inputs.domain }}"',
+    'APP_DIR="$HOME/websites/${{ inputs.domain }}/${{ github.repository_id }}"',
     'TEMP_DIR="$HOME/websites/.temp/${{ inputs.domain }}"',
     "",
     'rm -rf "$TEMP_DIR"',
@@ -214,7 +214,7 @@ function generateDeployJobSshScript(workflow: Workflow): string {
     'gh run download ${{ github.run_id }} -R ${{ github.repository }} -n artifact -D "$TEMP_DIR"',
     "",
     `tar -xzf "$TEMP_DIR/${artifact}" -C "$APP_DIR"`,
-    'rm -rf "TEMP_DIR"',
+    'rm -rf "$TEMP_DIR"',
     "",
     'cd "$APP_DIR"',
     "",
@@ -225,6 +225,8 @@ function generateDeployJobSshScript(workflow: Workflow): string {
     `mkdir -p ${www}`,
     `mv ./* ${www}`,
     "shopt -u dotglob",
+    "",
+    'rm -rf "$APP_DIR"',
     "",
     workflow.deploy.type === "process"
       ? generateDeployJobProcessScript(workflow)
