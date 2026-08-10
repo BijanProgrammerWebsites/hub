@@ -74,6 +74,10 @@ jobs:
           port: ${{ secrets.SERVER_PORT }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
+            BASE_HREF="${{ inputs.base-href }}"
+            BASE_HREF="${BASE_HREF#/}"
+            BASE_HREF="${BASE_HREF%/}"
+
             APP_DIR="$HOME/websites/${{ inputs.domain }}"
             TEMP_DIR="$HOME/websites/.temp/${{ inputs.domain }}"
 
@@ -93,11 +97,11 @@ jobs:
             printf '%s' "${{ secrets.ENV_FILE }}" > ".env"
             printf '%s' "${{ secrets.ENV_LOCAL_FILE }}" > ".env"
 
-            rm -rf /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}
-            mkdir -p /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}
-            mv ./. /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}
+            rm -rf /var/www/${{ inputs.domain }}/html/$BASE_HREF
+            mkdir -p /var/www/${{ inputs.domain }}/html/$BASE_HREF
+            mv ./. /var/www/${{ inputs.domain }}/html/$BASE_HREF
 
-            cd /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}
+            cd /var/www/${{ inputs.domain }}/html/$BASE_HREF
 
             if pm2 describe "${{ inputs.process-name }}" >/dev/null 2>&1; then
               PORT=${{ inputs.port }} pm2 restart "${{ inputs.process-name }}" --update-env

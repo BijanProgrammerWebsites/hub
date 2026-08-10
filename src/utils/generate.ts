@@ -1,7 +1,7 @@
 import { Workflow, WorkflowInput, WorkflowSecret } from "../types/workflow";
 
 const artifact = "artifact-${{ github.repository_id }}.tar.gz";
-const www = "/var/www/${{ inputs.domain }}/html${{ inputs.base-href }}";
+const www = "/var/www/${{ inputs.domain }}/html/$BASE_HREF";
 
 export function generate(workflow: Workflow): string {
   return join([
@@ -200,6 +200,8 @@ function generateDeployJobSteps(workflow: Workflow): string {
 
 function generateDeployJobSshScript(workflow: Workflow): string {
   return join([
+    generateDeployJobBaseHrefNormalizer(workflow),
+    "",
     'APP_DIR="$HOME/websites/${{ inputs.domain }}"',
     'TEMP_DIR="$HOME/websites/.temp/${{ inputs.domain }}"',
     "",
@@ -225,6 +227,14 @@ function generateDeployJobSshScript(workflow: Workflow): string {
     workflow.deploy.type === "process"
       ? generateDeployJobProcessScript(workflow)
       : null,
+  ]);
+}
+
+function generateDeployJobBaseHrefNormalizer(workflow: Workflow): string {
+  return join([
+    'BASE_HREF="${{ inputs.base-href }}"',
+    'BASE_HREF="${BASE_HREF#/}"',
+    'BASE_HREF="${BASE_HREF%/}"',
   ]);
 }
 

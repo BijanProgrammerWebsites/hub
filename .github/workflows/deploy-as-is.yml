@@ -47,6 +47,10 @@ jobs:
           port: ${{ secrets.SERVER_PORT }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
+            BASE_HREF="${{ inputs.base-href }}"
+            BASE_HREF="${BASE_HREF#/}"
+            BASE_HREF="${BASE_HREF%/}"
+
             APP_DIR="$HOME/websites/${{ inputs.domain }}"
             TEMP_DIR="$HOME/websites/.temp/${{ inputs.domain }}"
 
@@ -63,6 +67,6 @@ jobs:
 
             cd "$APP_DIR"
 
-            rm -rf /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}
-            mkdir -p /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}
-            mv ./. /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}
+            rm -rf /var/www/${{ inputs.domain }}/html/$BASE_HREF
+            mkdir -p /var/www/${{ inputs.domain }}/html/$BASE_HREF
+            mv ./. /var/www/${{ inputs.domain }}/html/$BASE_HREF
