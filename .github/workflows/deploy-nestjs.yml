@@ -101,6 +101,6 @@ jobs:
             if pm2 describe "${{ inputs.process-name }}" >/dev/null 2>&1; then
               PORT=${{ inputs.port }} pm2 restart "${{ inputs.process-name }}" --update-env
             else
-              PORT=${{ inputs.port }} pm2 start server.js --name "${{ inputs.process-name }}"
+              PORT=${{ inputs.port }} pm2 start main.js --name "${{ inputs.process-name }}"
             fi
             pm2 save

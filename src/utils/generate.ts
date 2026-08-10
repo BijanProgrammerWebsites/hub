@@ -264,7 +264,7 @@ function generateDeployJobProcessScript(workflow: Workflow): string {
     ),
     "else",
     indent(
-      'PORT=${{ inputs.port }} pm2 start server.js --name "${{ inputs.process-name }}"',
+      `PORT=$\{{ inputs.port }} pm2 start ${workflow.deploy.processEntryFile ?? "server.js"} --name "$\{{ inputs.process-name }}"`,
     ),
     "fi",
     "pm2 save",
