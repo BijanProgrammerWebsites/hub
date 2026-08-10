@@ -131,7 +131,7 @@ function generateBuildJobSteps(workflow: Workflow): string {
     "- uses: actions/upload-artifact@v7",
     indent("with:"),
     indent(indent("name: artifact")),
-    indent(indent("path: $ARTIFACT")),
+    indent(indent("path: ${{ env.ARTIFACT }}")),
   ]);
 }
 
