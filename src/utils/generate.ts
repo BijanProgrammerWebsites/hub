@@ -1,12 +1,13 @@
 import { Workflow, WorkflowInput, WorkflowSecret } from "../types/workflow";
 
+const artifact = "artifact-${{ github.repository_id }}.tar.gz";
+const www = "/var/www/${{ inputs.domain }}/html${{ inputs.base-href }}";
+
 export function generate(workflow: Workflow): string {
   return join([
     generateName(workflow),
     "",
     generateOn(workflow),
-    "",
-    generateEnv(workflow),
     "",
     generateJobs(workflow),
   ]);
@@ -86,16 +87,6 @@ function generateSecret(secret: WorkflowSecret): string {
   return join([`${secret.name}:`, indent(`required: ${secret.required}`)]);
 }
 
-function generateEnv(workflow: Workflow): string {
-  return join([
-    "env:",
-    indent("ARTIFACT: " + "artifact-${{ github.repository_id }}.tar.gz"),
-    indent(
-      "WWW: " + "/var/www/${{ inputs.domain }}/html${{ inputs.base-href }}",
-    ),
-  ]);
-}
-
 function generateJobs(workflow: Workflow): string {
   return join([
     "jobs:",
@@ -126,12 +117,12 @@ function generateBuildJobSteps(workflow: Workflow): string {
     generateBuildJobPrepareArtifactStep(workflow),
     "",
     "- name: Compress Artifact",
-    indent(`run: tar -czf $ARTIFACT -C ${workflow.build.path} .`),
+    indent(`run: tar -czf ${artifact} -C ${workflow.build.path} .`),
     "",
     "- uses: actions/upload-artifact@v7",
     indent("with:"),
     indent(indent("name: artifact")),
-    indent(indent("path: ${{ env.ARTIFACT }}")),
+    indent(indent(`path: ${artifact}`)),
   ]);
 }
 
@@ -220,16 +211,16 @@ function generateDeployJobSshScript(workflow: Workflow): string {
     "",
     'gh run download ${{ github.run_id }} -R ${{ github.repository }} -n artifact -D "$TEMP_DIR"',
     "",
-    'tar -xzf "$TEMP_DIR/$ARTIFACT" -C "$APP_DIR"',
+    `tar -xzf "$TEMP_DIR/${artifact}" -C "$APP_DIR"`,
     'rm -rf "TEMP_DIR"',
     "",
     'cd "$APP_DIR"',
     "",
     generateDeployJobEnvStep(workflow),
     "",
-    "rm -rf $WWW",
-    "mkdir -p $WWW",
-    "mv ./* $WWW",
+    `rm -rf ${www}`,
+    `mkdir -p ${www}`,
+    `mv ./* ${www}`,
     "",
     workflow.deploy.type === "process"
       ? generateDeployJobProcessScript(workflow)
@@ -251,7 +242,7 @@ function generateDeployJobEnvStep(workflow: Workflow): string | null {
 
 function generateDeployJobProcessScript(workflow: Workflow): string {
   return join([
-    "cd $WWW",
+    `cd ${www}`,
     "",
     'if pm2 describe "${{ inputs.process-name }}" >/dev/null 2>&1; then',
     indent(

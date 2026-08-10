@@ -19,10 +19,6 @@ on:
       SERVER_SSH_KEY:
         required: true
 
-env:
-  ARTIFACT: artifact-${{ github.repository_id }}.tar.gz
-  WWW: /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -31,12 +27,12 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: Compress Artifact
-        run: tar -czf $ARTIFACT -C . .
+        run: tar -czf artifact-${{ github.repository_id }}.tar.gz -C . .
 
       - uses: actions/upload-artifact@v7
         with:
           name: artifact
-          path: ${{ env.ARTIFACT }}
+          path: artifact-${{ github.repository_id }}.tar.gz
 
   deploy:
     runs-on: ubuntu-latest
@@ -62,11 +58,11 @@ jobs:
 
             gh run download ${{ github.run_id }} -R ${{ github.repository }} -n artifact -D "$TEMP_DIR"
 
-            tar -xzf "$TEMP_DIR/$ARTIFACT" -C "$APP_DIR"
+            tar -xzf "$TEMP_DIR/artifact-${{ github.repository_id }}.tar.gz" -C "$APP_DIR"
             rm -rf "TEMP_DIR"
 
             cd "$APP_DIR"
 
-            rm -rf $WWW
-            mkdir -p $WWW
-            mv ./* $WWW
+            rm -rf /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}
+            mkdir -p /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}
+            mv ./* /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}
