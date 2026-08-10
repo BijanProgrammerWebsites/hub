@@ -203,11 +203,11 @@ function generateDeployJobSshScript(workflow: Workflow): string {
     'APP_DIR="$HOME/websites/${{ inputs.domain }}"',
     'TEMP_DIR="$HOME/websites/.temp/${{ inputs.domain }}"',
     "",
+    'rm -rf "$TEMP_DIR"',
     'mkdir -p "$TEMP_DIR"',
-    'rm -rf "$TEMP_DIR/*"',
     "",
+    'rm -rf "$APP_DIR"',
     'mkdir -p "$APP_DIR"',
-    'rm -rf "$APP_DIR/*"',
     "",
     'gh run download ${{ github.run_id }} -R ${{ github.repository }} -n artifact -D "$TEMP_DIR"',
     "",
@@ -220,7 +220,7 @@ function generateDeployJobSshScript(workflow: Workflow): string {
     "",
     `rm -rf ${www}`,
     `mkdir -p ${www}`,
-    `mv ./* ${www}`,
+    `mv ./. ${www}`,
     "",
     workflow.deploy.type === "process"
       ? generateDeployJobProcessScript(workflow)

@@ -67,11 +67,11 @@ jobs:
             APP_DIR="$HOME/websites/${{ inputs.domain }}"
             TEMP_DIR="$HOME/websites/.temp/${{ inputs.domain }}"
 
+            rm -rf "$TEMP_DIR"
             mkdir -p "$TEMP_DIR"
-            rm -rf "$TEMP_DIR/*"
 
+            rm -rf "$APP_DIR"
             mkdir -p "$APP_DIR"
-            rm -rf "$APP_DIR/*"
 
             gh run download ${{ github.run_id }} -R ${{ github.repository }} -n artifact -D "$TEMP_DIR"
 
@@ -82,4 +82,4 @@ jobs:
 
             rm -rf /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}
             mkdir -p /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}
-            mv ./* /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}
+            mv ./. /var/www/${{ inputs.domain }}/html${{ inputs.base-href }}
