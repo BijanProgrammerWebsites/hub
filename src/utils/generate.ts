@@ -220,9 +220,11 @@ function generateDeployJobSshScript(workflow: Workflow): string {
     "",
     generateDeployJobEnvStep(workflow),
     "",
+    "shopt -s dotglob",
     `rm -rf ${www}`,
     `mkdir -p ${www}`,
-    `mv ./. ${www}`,
+    `mv ./* ${www}`,
+    "shopt -u dotglob",
     "",
     workflow.deploy.type === "process"
       ? generateDeployJobProcessScript(workflow)

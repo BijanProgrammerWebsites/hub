@@ -97,9 +97,11 @@ jobs:
             printf '%s' "${{ secrets.ENV_FILE }}" > ".env"
             printf '%s' "${{ secrets.ENV_LOCAL_FILE }}" > ".env"
 
+            shopt -s dotglob
             rm -rf /var/www/${{ inputs.domain }}/html/$BASE_HREF
             mkdir -p /var/www/${{ inputs.domain }}/html/$BASE_HREF
-            mv ./. /var/www/${{ inputs.domain }}/html/$BASE_HREF
+            mv ./* /var/www/${{ inputs.domain }}/html/$BASE_HREF
+            shopt -u dotglob
 
             cd /var/www/${{ inputs.domain }}/html/$BASE_HREF
 
