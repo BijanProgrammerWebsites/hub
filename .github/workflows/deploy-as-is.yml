@@ -27,12 +27,12 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: Compress Artifact
-        run: tar -czf artifact-${{ github.repository_id }}.tar.gz -C . .
+        run: tar -czf /tmp/artifact-${{ github.repository_id }}.tar.gz -C . .
 
       - uses: actions/upload-artifact@v7
         with:
           name: artifact
-          path: artifact-${{ github.repository_id }}.tar.gz
+          path: /tmp/artifact-${{ github.repository_id }}.tar.gz
 
   deploy:
     runs-on: ubuntu-latest

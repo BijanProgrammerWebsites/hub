@@ -117,12 +117,12 @@ function generateBuildJobSteps(workflow: Workflow): string {
     generateBuildJobPrepareArtifactStep(workflow),
     "",
     "- name: Compress Artifact",
-    indent(`run: tar -czf ${artifact} -C ${workflow.build.path} .`),
+    indent(`run: tar -czf /tmp/${artifact} -C ${workflow.build.path} .`),
     "",
     "- uses: actions/upload-artifact@v7",
     indent("with:"),
     indent(indent("name: artifact")),
-    indent(indent(`path: ${artifact}`)),
+    indent(indent(`path: /tmp/${artifact}`)),
   ]);
 }
 

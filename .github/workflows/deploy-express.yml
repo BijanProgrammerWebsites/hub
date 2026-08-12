@@ -46,12 +46,12 @@ jobs:
         run: npm run build
 
       - name: Compress Artifact
-        run: tar -czf artifact-${{ github.repository_id }}.tar.gz -C dist .
+        run: tar -czf /tmp/artifact-${{ github.repository_id }}.tar.gz -C dist .
 
       - uses: actions/upload-artifact@v7
         with:
           name: artifact
-          path: artifact-${{ github.repository_id }}.tar.gz
+          path: /tmp/artifact-${{ github.repository_id }}.tar.gz
 
   deploy:
     runs-on: ubuntu-latest
