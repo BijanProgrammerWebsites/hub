@@ -34,7 +34,13 @@ export const workflows: Workflow[] = [
   {
     filename: "deploy-nestjs.yml",
     name: "Deploy NestJS",
-    build: { path: "dist" },
+    build: {
+      path: "bundle",
+      prepareArtifact: [
+        "npx --yes @vercel/ncc build dist/main.js -o bundle",
+        "mv bundle/index.js bundle/main.js",
+      ],
+    },
     deploy: {
       type: "process",
       envSecrets: ["ENV_FILE"],

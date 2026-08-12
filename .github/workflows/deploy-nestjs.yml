@@ -45,8 +45,13 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Prepare Artifact
+        run: |
+          npx --yes @vercel/ncc build dist/main.js -o bundle
+          mv bundle/index.js bundle/main.js
+
       - name: Compress Artifact
-        run: tar -czf artifact-${{ github.repository_id }}.tar.gz -C dist .
+        run: tar -czf artifact-${{ github.repository_id }}.tar.gz -C bundle .
 
       - uses: actions/upload-artifact@v7
         with:
