@@ -202,8 +202,8 @@ function generateDeployJobSshScript(workflow: Workflow): string {
   return join([
     generateDeployJobBaseHrefNormalizer(workflow),
     "",
-    'APP_DIR="$HOME/websites/${{ inputs.domain }}/${{ github.repository_id }}"',
-    'TEMP_DIR="$HOME/websites/.temp/${{ inputs.domain }}"',
+    'APP_DIR="/tmp/websites/${{ inputs.domain }}/${{ github.repository_id }}"',
+    'TEMP_DIR="/tmp/websites/.temp/${{ inputs.domain }}"',
     "",
     'rm -rf "$TEMP_DIR"',
     'mkdir -p "$TEMP_DIR"',
