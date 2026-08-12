@@ -9,6 +9,9 @@ on:
       base-href:
         type: string
         required: true
+      project-name:
+        type: string
+        required: true
     secrets:
       SERVER_HOST:
         required: true
@@ -38,7 +41,7 @@ jobs:
         run: npm run build
 
       - name: Compress Artifact
-        run: tar -czf artifact-${{ github.repository_id }}.tar.gz -C dist .
+        run: tar -czf artifact-${{ github.repository_id }}.tar.gz -C dist/${{ inputs.project-name }} .
 
       - uses: actions/upload-artifact@v7
         with:

@@ -4,7 +4,8 @@ export const workflows: Workflow[] = [
   {
     filename: "deploy-angular.yml",
     name: "Deploy Angular",
-    build: { path: "dist" },
+    extraInputs: [{ name: "project-name", type: "string", required: true }],
+    build: { path: "dist/${{ inputs.project-name }}" },
     deploy: { type: "static" },
   },
   {
