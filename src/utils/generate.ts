@@ -65,12 +65,12 @@ function generateSecrets(workflow: Workflow): string {
     { name: "SERVER_SSH_KEY", required: true },
   ];
 
-  workflow.build.envSecrets?.forEach((secret) =>
-    secrets.push({ name: secret, required: false }),
+  workflow.build.envs?.forEach((env) =>
+    secrets.push({ name: env.secretName, required: false }),
   );
 
-  workflow.deploy.envSecrets?.forEach((secret) =>
-    secrets.push({ name: secret, required: false }),
+  workflow.deploy.envs?.forEach((env) =>
+    secrets.push({ name: env.secretName, required: false }),
   );
 
   if (workflow.extraSecrets) {
@@ -127,15 +127,19 @@ function generateBuildJobSteps(workflow: Workflow): string {
 }
 
 function generateBuildJobEnvStep(workflow: Workflow): string | null {
-  if (!workflow.build.envSecrets?.length) {
+  if (!workflow.build.envs?.length) {
     return null;
   }
 
   return join([
-    "- name: Fill Out the .env File",
+    "- name: Fill Out .env Files",
     indent("run: |"),
-    workflow.build.envSecrets.map((secret) =>
-      indent(indent(`printf '%s' "$\{{ secrets.${secret} }}" > ".env"`)),
+    workflow.build.envs.map((env) =>
+      indent(
+        indent(
+          `printf '%s' "$\{{ secrets.${env.secretName} }}" > "${env.filename}"`,
+        ),
+      ),
     ),
   ]);
 }
@@ -243,13 +247,14 @@ function generateDeployJobBaseHrefNormalizer(workflow: Workflow): string {
 }
 
 function generateDeployJobEnvStep(workflow: Workflow): string | null {
-  if (!workflow.deploy.envSecrets?.length) {
+  if (!workflow.deploy.envs?.length) {
     return null;
   }
 
   return join([
-    workflow.deploy.envSecrets.map(
-      (secret) => `printf '%s' "$\{{ secrets.${secret} }}" > ".env"`,
+    workflow.deploy.envs.map(
+      (env) =>
+        `printf '%s' "$\{{ secrets.${env.secretName} }}" > "${env.filename}"`,
     ),
   ]);
 }

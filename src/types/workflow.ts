@@ -5,14 +5,14 @@ export type Workflow = {
   extraSecrets?: WorkflowSecret[];
   build: {
     path: string;
-    envSecrets?: string[];
+    envs?: WorkflowEnv[];
     skipNpmBuild?: boolean;
     nodeVersion?: number;
     prepareArtifact?: string[];
   };
   deploy: {
     type: "static" | "process";
-    envSecrets?: string[];
+    envs?: WorkflowEnv[];
     processEntryFile?: string;
   };
 };
@@ -26,4 +26,9 @@ export type WorkflowInput = {
 export type WorkflowSecret = {
   name: string;
   required: boolean;
+};
+
+export type WorkflowEnv = {
+  secretName: string;
+  filename: string;
 };

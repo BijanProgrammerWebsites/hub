@@ -30,7 +30,10 @@ export const workflows: Workflow[] = [
     filename: "deploy-express.yml",
     name: "Deploy Express",
     build: { path: "dist" },
-    deploy: { type: "process", envSecrets: ["ENV_FILE"] },
+    deploy: {
+      type: "process",
+      envs: [{ secretName: "ENV_FILE", filename: ".env" }],
+    },
   },
   {
     filename: "deploy-nestjs.yml",
@@ -44,7 +47,7 @@ export const workflows: Workflow[] = [
     },
     deploy: {
       type: "process",
-      envSecrets: ["ENV_FILE"],
+      envs: [{ secretName: "ENV_FILE", filename: ".env" }],
       processEntryFile: "main.js",
     },
   },
@@ -59,12 +62,21 @@ export const workflows: Workflow[] = [
         "[ -d .next/static ] && cp -r .next/static .next/standalone/.next/",
       ],
     },
-    deploy: { type: "process", envSecrets: ["ENV_FILE", "ENV_LOCAL_FILE"] },
+    deploy: {
+      type: "process",
+      envs: [
+        { secretName: "ENV_FILE", filename: ".env" },
+        { secretName: "ENV_LOCAL_FILE", filename: ".env.local" },
+      ],
+    },
   },
   {
     filename: "deploy-vite.yml",
     name: "Deploy Vite",
-    build: { path: "dist", envSecrets: ["ENV_FILE"] },
+    build: {
+      path: "dist",
+      envs: [{ secretName: "ENV_FILE", filename: ".env" }],
+    },
     deploy: { type: "static" },
   },
 ];

@@ -95,7 +95,7 @@ jobs:
             cd "$APP_DIR"
 
             printf '%s' "${{ secrets.ENV_FILE }}" > ".env"
-            printf '%s' "${{ secrets.ENV_LOCAL_FILE }}" > ".env"
+            printf '%s' "${{ secrets.ENV_LOCAL_FILE }}" > ".env.local"
 
             shopt -s dotglob
             rm -rf /var/www/${{ inputs.domain }}/html/$BASE_HREF

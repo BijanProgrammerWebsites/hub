@@ -28,7 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Fill Out the .env File
+      - name: Fill Out .env Files
         run: |
           printf '%s' "${{ secrets.ENV_FILE }}" > ".env"
 
