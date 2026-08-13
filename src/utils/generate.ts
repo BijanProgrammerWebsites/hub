@@ -204,6 +204,8 @@ function generateDeployJobSteps(workflow: Workflow): string {
 
 function generateDeployJobSshScript(workflow: Workflow): string {
   return join([
+    "set -e",
+    "",
     generateDeployJobBaseHrefNormalizer(workflow),
     "",
     'APP_DIR="/tmp/websites/${{ inputs.domain }}/${{ github.repository_id }}"',
