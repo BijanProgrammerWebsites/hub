@@ -71,6 +71,18 @@ export const workflows: Workflow[] = [
     },
   },
   {
+    filename: "deploy-nextjs-export.yml",
+    name: "Deploy Next.js Export",
+    build: {
+      path: "out",
+      envs: [
+        { secretName: "ENV_FILE", filename: ".env" },
+        { secretName: "ENV_LOCAL_FILE", filename: ".env.local" },
+      ],
+    },
+    deploy: { type: "static" },
+  },
+  {
     filename: "deploy-vite.yml",
     name: "Deploy Vite",
     build: {

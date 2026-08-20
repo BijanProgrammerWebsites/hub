@@ -1,0 +1,98 @@
+name: Deploy Next.js Export
+
+on:
+  workflow_call:
+    inputs:
+      domain:
+        type: string
+        required: true
+      base-href:
+        type: string
+        required: true
+    secrets:
+      SERVER_HOST:
+        required: true
+      SERVER_USERNAME:
+        required: true
+      SERVER_PORT:
+        required: true
+      SERVER_SSH_KEY:
+        required: true
+      ENV_FILE:
+        required: false
+      ENV_LOCAL_FILE:
+        required: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Fill Out .env Files
+        run: |
+          printf '%s' "${{ secrets.ENV_FILE }}" > ".env"
+          printf '%s' "${{ secrets.ENV_LOCAL_FILE }}" > ".env.local"
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Compress Artifact
+        run: tar -czf /tmp/artifact-${{ github.repository_id }}.tar.gz -C out .
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: artifact
+          path: /tmp/artifact-${{ github.repository_id }}.tar.gz
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Run Commands on Server Using SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          port: ${{ secrets.SERVER_PORT }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            set -e
+
+            BASE_HREF="${{ inputs.base-href }}"
+            BASE_HREF="${BASE_HREF#/}"
+            BASE_HREF="${BASE_HREF%/}"
+
+            APP_DIR="/tmp/websites/${{ inputs.domain }}/${{ github.repository_id }}"
+            TEMP_DIR="/tmp/websites/.temp/${{ inputs.domain }}"
+
+            rm -rf "$TEMP_DIR"
+            mkdir -p "$TEMP_DIR"
+
+            rm -rf "$APP_DIR"
+            mkdir -p "$APP_DIR"
+
+            gh run download ${{ github.run_id }} -R ${{ github.repository }} -n artifact -D "$TEMP_DIR"
+
+            tar -xzf "$TEMP_DIR/artifact-${{ github.repository_id }}.tar.gz" -C "$APP_DIR"
+            rm -rf "$TEMP_DIR"
+
+            cd "$APP_DIR"
+
+            shopt -s dotglob
+            rm -rf /var/www/${{ inputs.domain }}/html/$BASE_HREF
+            mkdir -p /var/www/${{ inputs.domain }}/html/$BASE_HREF
+            mv ./* /var/www/${{ inputs.domain }}/html/$BASE_HREF
+            shopt -u dotglob
+
+            rm -rf "$APP_DIR"
