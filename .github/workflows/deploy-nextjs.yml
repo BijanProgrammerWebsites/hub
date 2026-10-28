@@ -36,6 +36,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Fill Out .env Files
+        run: |
+          printf '%s' "${{ secrets.ENV_FILE }}" > ".env"
+          printf '%s' "${{ secrets.ENV_LOCAL_FILE }}" > ".env.local"
+
       - uses: actions/setup-node@v7
         with:
           node-version: "24"
@@ -52,6 +57,7 @@ jobs:
           [ -d public ] && cp -r public .next/standalone/
           [ -d .next/static ] && mkdir -p .next/standalone/.next
           [ -d .next/static ] && cp -r .next/static .next/standalone/.next/
+          rm -f .next/standalone/.env*
 
       - name: Compress Artifact
         run: tar -czf /tmp/artifact-${{ github.repository_id }}.tar.gz -C .next/standalone .

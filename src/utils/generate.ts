@@ -72,13 +72,12 @@ function generateSecrets(workflow: Workflow): string {
     { name: "SERVER_SSH_KEY", required: true },
   ];
 
-  workflow.build.envs?.forEach((env) =>
-    secrets.push({ name: env.secretName, required: false }),
-  );
+  const buildEnvs = workflow.build.envs ?? [];
+  const deployEnvs = workflow.deploy.envs ?? [];
+  const envSecrets = [...buildEnvs, ...deployEnvs];
+  const envSecretNames = new Set(envSecrets.map((env) => env.secretName));
 
-  workflow.deploy.envs?.forEach((env) =>
-    secrets.push({ name: env.secretName, required: false }),
-  );
+  envSecretNames.forEach((name) => secrets.push({ name, required: false }));
 
   if (workflow.extraSecrets) {
     secrets.push(...workflow.extraSecrets);

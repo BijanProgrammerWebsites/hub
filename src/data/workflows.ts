@@ -1,4 +1,14 @@
-import { Workflow } from "../types/workflow";
+import { Workflow, WorkflowEnv } from "../types/workflow";
+
+const nextjsEnvs: WorkflowEnv[] = [
+  { secretName: "ENV_FILE", filename: ".env" },
+  { secretName: "ENV_LOCAL_FILE", filename: ".env.local" },
+];
+
+const monorepoNextjsEnvs: WorkflowEnv[] = nextjsEnvs.map((env) => ({
+  ...env,
+  filename: `\${{ inputs.app-path }}/${env.filename}`,
+}));
 
 export const workflows: Workflow[] = [
   {
@@ -59,22 +69,18 @@ export const workflows: Workflow[] = [
     monorepo: true,
     build: {
       path: "${{ inputs.app-path }}/.next/standalone",
+      envs: monorepoNextjsEnvs,
       prepareArtifact: [
         "cd ${{ inputs.app-path }}",
         "[ -d public ] && cp -r public .next/standalone/${{ inputs.app-path }}/",
         "[ -d .next/static ] && mkdir -p .next/standalone/${{ inputs.app-path }}/.next",
         "[ -d .next/static ] && cp -r .next/static .next/standalone/${{ inputs.app-path }}/.next/",
+        "rm -f .next/standalone/${{ inputs.app-path }}/.env*",
       ],
     },
     deploy: {
       type: "process",
-      envs: [
-        { secretName: "ENV_FILE", filename: "${{ inputs.app-path }}/.env" },
-        {
-          secretName: "ENV_LOCAL_FILE",
-          filename: "${{ inputs.app-path }}/.env.local",
-        },
-      ],
+      envs: monorepoNextjsEnvs,
       processEntryFile: "${{ inputs.app-path }}/server.js",
     },
   },
@@ -84,13 +90,7 @@ export const workflows: Workflow[] = [
     monorepo: true,
     build: {
       path: "${{ inputs.app-path }}/out",
-      envs: [
-        { secretName: "ENV_FILE", filename: "${{ inputs.app-path }}/.env" },
-        {
-          secretName: "ENV_LOCAL_FILE",
-          filename: "${{ inputs.app-path }}/.env.local",
-        },
-      ],
+      envs: monorepoNextjsEnvs,
     },
     deploy: { type: "static" },
   },
@@ -115,18 +115,17 @@ export const workflows: Workflow[] = [
     name: "Deploy Next.js",
     build: {
       path: ".next/standalone",
+      envs: nextjsEnvs,
       prepareArtifact: [
         "[ -d public ] && cp -r public .next/standalone/",
         "[ -d .next/static ] && mkdir -p .next/standalone/.next",
         "[ -d .next/static ] && cp -r .next/static .next/standalone/.next/",
+        "rm -f .next/standalone/.env*",
       ],
     },
     deploy: {
       type: "process",
-      envs: [
-        { secretName: "ENV_FILE", filename: ".env" },
-        { secretName: "ENV_LOCAL_FILE", filename: ".env.local" },
-      ],
+      envs: nextjsEnvs,
     },
   },
   {
@@ -134,10 +133,7 @@ export const workflows: Workflow[] = [
     name: "Deploy Next.js Export",
     build: {
       path: "out",
-      envs: [
-        { secretName: "ENV_FILE", filename: ".env" },
-        { secretName: "ENV_LOCAL_FILE", filename: ".env.local" },
-      ],
+      envs: nextjsEnvs,
     },
     deploy: { type: "static" },
   },

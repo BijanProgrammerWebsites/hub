@@ -42,6 +42,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Fill Out .env Files
+        run: |
+          printf '%s' "${{ secrets.ENV_FILE }}" > "${{ inputs.app-path }}/.env"
+          printf '%s' "${{ secrets.ENV_LOCAL_FILE }}" > "${{ inputs.app-path }}/.env.local"
+
       - uses: pnpm/action-setup@v6
 
       - uses: actions/setup-node@v7
@@ -61,6 +66,7 @@ jobs:
           [ -d public ] && cp -r public .next/standalone/${{ inputs.app-path }}/
           [ -d .next/static ] && mkdir -p .next/standalone/${{ inputs.app-path }}/.next
           [ -d .next/static ] && cp -r .next/static .next/standalone/${{ inputs.app-path }}/.next/
+          rm -f .next/standalone/${{ inputs.app-path }}/.env*
 
       - name: Compress Artifact
         run: tar -czf /tmp/artifact-${{ github.repository_id }}.tar.gz -C ${{ inputs.app-path }}/.next/standalone .
