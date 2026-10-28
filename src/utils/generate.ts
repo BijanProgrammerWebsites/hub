@@ -39,6 +39,13 @@ function generateInputs(workflow: Workflow): string {
     );
   }
 
+  if (workflow.monorepo) {
+    inputs.push(
+      { name: "app-path", type: "string", required: true },
+      { name: "package-name", type: "string", required: true },
+    );
+  }
+
   if (workflow.extraInputs) {
     inputs.push(...workflow.extraInputs);
   }
@@ -149,6 +156,10 @@ function generateBuildJobNpmStep(workflow: Workflow): string | null {
     return null;
   }
 
+  if (workflow.monorepo) {
+    return generateBuildJobPnpmStep(workflow);
+  }
+
   return join([
     "- uses: actions/setup-node@v7",
     indent("with:"),
@@ -160,6 +171,23 @@ function generateBuildJobNpmStep(workflow: Workflow): string | null {
     "",
     "- name: Build",
     indent("run: npm run build"),
+  ]);
+}
+
+function generateBuildJobPnpmStep(workflow: Workflow): string {
+  return join([
+    "- uses: pnpm/action-setup@v6",
+    "",
+    "- uses: actions/setup-node@v7",
+    indent("with:"),
+    indent(indent(`node-version: "${workflow.build.nodeVersion ?? 24}"`)),
+    indent(indent('cache: "pnpm"')),
+    "",
+    "- name: Install Dependencies",
+    indent("run: pnpm install --frozen-lockfile"),
+    "",
+    "- name: Build",
+    indent('run: pnpm turbo run build --filter="${{ inputs.package-name }}"'),
   ]);
 }
 

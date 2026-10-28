@@ -36,6 +36,65 @@ export const workflows: Workflow[] = [
     },
   },
   {
+    filename: "deploy-monorepo-nestjs.yml",
+    name: "Deploy Monorepo NestJS",
+    monorepo: true,
+    build: {
+      path: "${{ inputs.app-path }}/bundle",
+      prepareArtifact: [
+        "cd ${{ inputs.app-path }}",
+        "pnpm dlx @vercel/ncc build dist/main.js -o bundle",
+        "mv bundle/index.js bundle/main.js",
+      ],
+    },
+    deploy: {
+      type: "process",
+      envs: [{ secretName: "ENV_FILE", filename: ".env" }],
+      processEntryFile: "main.js",
+    },
+  },
+  {
+    filename: "deploy-monorepo-nextjs.yml",
+    name: "Deploy Monorepo Next.js",
+    monorepo: true,
+    build: {
+      path: "${{ inputs.app-path }}/.next/standalone",
+      prepareArtifact: [
+        "cd ${{ inputs.app-path }}",
+        "[ -d public ] && cp -r public .next/standalone/${{ inputs.app-path }}/",
+        "[ -d .next/static ] && mkdir -p .next/standalone/${{ inputs.app-path }}/.next",
+        "[ -d .next/static ] && cp -r .next/static .next/standalone/${{ inputs.app-path }}/.next/",
+      ],
+    },
+    deploy: {
+      type: "process",
+      envs: [
+        { secretName: "ENV_FILE", filename: "${{ inputs.app-path }}/.env" },
+        {
+          secretName: "ENV_LOCAL_FILE",
+          filename: "${{ inputs.app-path }}/.env.local",
+        },
+      ],
+      processEntryFile: "${{ inputs.app-path }}/server.js",
+    },
+  },
+  {
+    filename: "deploy-monorepo-nextjs-export.yml",
+    name: "Deploy Monorepo Next.js Export",
+    monorepo: true,
+    build: {
+      path: "${{ inputs.app-path }}/out",
+      envs: [
+        { secretName: "ENV_FILE", filename: "${{ inputs.app-path }}/.env" },
+        {
+          secretName: "ENV_LOCAL_FILE",
+          filename: "${{ inputs.app-path }}/.env.local",
+        },
+      ],
+    },
+    deploy: { type: "static" },
+  },
+  {
     filename: "deploy-nestjs.yml",
     name: "Deploy NestJS",
     build: {

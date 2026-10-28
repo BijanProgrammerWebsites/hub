@@ -1,6 +1,7 @@
 export type Workflow = {
   filename: string;
   name: string;
+  monorepo?: boolean;
   extraInputs?: WorkflowInput[];
   extraSecrets?: WorkflowSecret[];
   build: {
