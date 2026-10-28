@@ -46,6 +46,13 @@ export const workflows: Workflow[] = [
     },
   },
   {
+    filename: "deploy-monorepo-docusaurus.yml",
+    name: "Deploy Monorepo Docusaurus",
+    monorepo: true,
+    build: { path: "${{ inputs.app-path }}/build" },
+    deploy: { type: "static" },
+  },
+  {
     filename: "deploy-monorepo-nestjs.yml",
     name: "Deploy Monorepo NestJS",
     monorepo: true,
